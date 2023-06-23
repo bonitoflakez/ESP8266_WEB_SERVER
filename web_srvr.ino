@@ -15,7 +15,7 @@ void handleScan() {
   html += "th, td { text-align: left; padding: 8px; }";
   html += "th { background-color: #f2f2f2; }";
   html += "tr:nth-child(even) { background-color: #f2f2f2; }";
-  html += "</style></head><body><h1>Wi-Fi Networks</h1><table>";
+  html += "</style></head><body><h1>Wi-Fi Networks</h1><div id=\"content\"><table>";
   html += "<tr><th>Sr. No.</th><th>Network</th><th>Signal Strength</th><th>Encryption Type</th><th>MAC Address</th></tr>";
 
   for (int i = 0; i < numNetworks; i++) {
@@ -28,10 +28,23 @@ void handleScan() {
     html += "</tr>";
   }
 
-  html += "</table></body></html>";
+  html += "</table></div><script>";
+  html += "function updateContent() {";
+  html += "var xhttp = new XMLHttpRequest();";
+  html += "xhttp.onreadystatechange = function() {";
+  html += "if (this.readyState == 4 && this.status == 200) {";
+  html += "document.getElementById(\"content\").innerHTML = this.responseText;";
+  html += "}";
+  html += "};";
+  html += "xhttp.open(\"GET\", \"/scan\", true);";
+  html += "xhttp.send();";
+  html += "}";
+  html += "setInterval(updateContent, 10000);";
+  html += "</script></body></html>";
 
   server.send(200, "text/html", html);
 }
+
 
 void handleRoot() {
   String html = "<h1>Welcome to ESP8266 Web Server!</h1>";
@@ -47,7 +60,7 @@ void handleConnectedDevices() {
   html += "th, td { text-align: left; padding: 8px; }";
   html += "th { background-color: #f2f2f2; }";
   html += "tr:nth-child(even) { background-color: #f2f2f2; }";
-  html += "</style></head><body><h1>Connected Devices</h1><table>";
+  html += "</style></head><body><h1>Connected Devices</h1><div id=\"content\"><table>";
   html += "<tr><th>Sr. No.</th><th>MAC Address</th><th>IP Address</th></tr>";
 
   struct station_info* stationList = wifi_softap_get_station_info();
@@ -70,7 +83,19 @@ void handleConnectedDevices() {
   }
   wifi_softap_free_station_info();
 
-  html += "</table></body></html>";
+  html += "</table></div><script>";
+  html += "function updateContent() {";
+  html += "var xhttp = new XMLHttpRequest();";
+  html += "xhttp.onreadystatechange = function() {";
+  html += "if (this.readyState == 4 && this.status == 200) {";
+  html += "document.getElementById(\"content\").innerHTML = this.responseText;";
+  html += "}";
+  html += "};";
+  html += "xhttp.open(\"GET\", \"/connected\", true);";
+  html += "xhttp.send();";
+  html += "}";
+  html += "setInterval(updateContent, 10000);";
+  html += "</script></body></html>";
 
   server.send(200, "text/html", html);
 }
@@ -95,7 +120,7 @@ void setup() {
   Serial.println(apPassword);
   Serial.print("IP address: ");
   Serial.println(WiFi.softAPIP());
-  Serial.println("Web server started");
+  Serial.println("Web server running...");
 }
 
 void loop() {
